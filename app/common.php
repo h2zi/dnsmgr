@@ -36,7 +36,7 @@ function get_curl($url, $post = 0, $referer = 0, $cookie = 0, $ua = 0, $nobody =
             $options['body'] = $post;
         }
     }
-    // 规范化请求头，避免非字符串类型的头部值导致 GuzzleHttp 抛出异常
+    // 规范化头部
     $options['headers'] = normalize_http_headers($options['headers']);
 
     try {
@@ -385,12 +385,7 @@ function clearDirectory($dir): bool
 }
 
 /**
- * 规范化 HTTP 请求头，确保每个头部的值都符合 GuzzleHttp 的类型要求（string 或非空的字符串数组）
- *
- * GuzzleHttp 会严格校验 headers 选项，若某个头部的值是 int、float、bool 等非字符串类型
- * （例如直接传入 time() 的返回值，或数据库/配置中读出的数值型字段），会抛出类似
- * `Passing int to request option "headers.X-Timestamp" is invalid; expected string|non-empty-array` 的异常。
- * 该函数会将标量值统一转换为字符串，数组值中的非字符串项会被转换或剔除，null 及无法转换的值会被移除。
+ * 规范化请求头，将标量值转为字符串，剔除 null 等非法值，避免 GuzzleHttp 类型校验异常
  *
  * @param array $headers 原始请求头
  * @return array 规范化后的请求头
@@ -414,10 +409,10 @@ function normalize_http_headers($headers)
         } elseif (is_string($value)) {
             $result[$name] = $value;
         } elseif (is_scalar($value)) {
-            // 布尔、整型、浮点型等标量类型统一转换为字符串
+            // 转为字符串
             $result[$name] = (string)$value;
         }
-        // null 或其他无法转换为字符串的值（如对象、资源）直接忽略，不作为请求头发送
+        // 忽略 null 等非法值
     }
     return $result;
 }
@@ -534,7 +529,7 @@ function http_request($url, $data = null, $referer = null, $cookie = null, $head
         $proxy_string .= $proxy_server . ':' . $proxy_port;
         $options['proxy'] = $proxy_string;
     }
-    // 规范化请求头，避免非字符串类型的头部值导致 GuzzleHttp 抛出异常
+    // 规范化头部
     $options['headers'] = normalize_http_headers($options['headers']);
 
     try {

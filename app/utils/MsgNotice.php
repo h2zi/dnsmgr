@@ -441,7 +441,7 @@ class MsgNotice
             $options['body'] = $body;
         }
 
-        // 规范化请求头，避免非字符串类型的头部值导致 GuzzleHttp 抛出异常
+        // 规范化头部
         $options['headers'] = normalize_http_headers($options['headers']);
 
         try {
